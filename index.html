@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>chat bot</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #547dff;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+    }
+    .chatbox {
+      width: 600px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .messages {
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    .user, .bot {
+      margin: 10px 0;
+    }
+    .user {
+      text-align: right;
+    }
+    .bot {
+      text-align: left;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 5px;
+    }
+    input {
+      width: 80%;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chatbox">
+    <div class="messages" id="chat">
+      <div class="bot"><strong>Bot:</strong> hello this is a chat bot by mihail kartal ozcan.</div>
+    </div>
+    <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
+    <button onclick="sendMessage()">send</button>
+  </div>
+
+  <script>
+    const API_KEY = "Bearer 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"; // ← Buraya kendi Hugging Face API anahtarını koy
+    const model = "tiiuae/falcon-7b-instruct"; // Hugging Face model ID, falcon-7b-instruct modelini kullanıyoruz
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chat = document.getElementById("chat");
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      chat.innerHTML += `<div class="user"><strong>user:</strong> ${userMessage}</div>`;
+      input.value = "";
+
+      const payload = {
+        inputs: `### Human: ${userMessage}\n### Assistant:`,
+        parameters: { max_new_tokens: 100 },
+      };
+
+      try {
+        const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+          method: "POST",
+          headers: {
+            Authorization: API_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Hugging Face API hatası.");
+        }
+
+        const data = await res.json();
+        const botReply = data?.[0]?.generated_text?.split("### Assistant:")[1]?.trim() || "Yanıt alınamadı.";
+        chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botReply}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+
+      } catch (error) {
+        chat.innerHTML += `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
+      }
+    }
+  </script>
+
+</body>
+</html>
