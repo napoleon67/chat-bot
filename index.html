@@ -59,9 +59,15 @@
   </div>
 
   <script>
-    const API_KEY = "Bearer hf_XXXXXXX"; // ← BURAYA Hugging Face token'ını yaz
+    const API_KEY = "Bearer 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"; // ← BURAYA Hugging Face token'ını yaz
 
     const model = "HuggingFaceH4/zephyr-7b-beta";
+    
+document.getElementById("userInput").addEventListener("keypress", function (e) {
+  if (e.key === "Enter") {
+    sendMessage();
+  }
+});
 
     async function sendMessage() {
       const input = document.getElementById("userInput");
