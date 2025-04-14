@@ -67,6 +67,14 @@ document.getElementById("userInput").addEventListener("keypress", function (e) {
   if (e.key === "Enter") {
     sendMessage();
   }
+  
+  parameters: {
+  max_new_tokens: 250,
+  temperature: 0.7,
+  do_sample: true,
+  top_p: 0.9
+  }
+  
 });
 
     async function sendMessage() {
