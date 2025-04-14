@@ -52,21 +52,16 @@
 
   <div class="chatbox">
     <div class="messages" id="chat">
-      <div class="bot"><strong>Bot:</strong> Merhaba! Mistral destekli chatbotq buradayım 😊</div>
+      <div class="bot"><strong>Bot:</strong> Merhaba! HuggingFace destekli bot buradayım 😊</div>
     </div>
     <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
     <button onclick="sendMessage()">Gönder</button>
   </div>
 
   <script>
-    const API_KEY = "Bearer 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"; // ← Hugging Face API key buraya
-    const model = "google/flan-t5-large";
+    const API_KEY = "Bearer hf_XXXXXXX"; // ← BURAYA Hugging Face token'ını yaz
 
-    document.getElementById("userInput").addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
-    });
+    const model = "HuggingFaceH4/zephyr-7b-beta";
 
     async function sendMessage() {
       const input = document.getElementById("userInput");
@@ -78,11 +73,11 @@
       input.value = "";
 
       const payload = {
-        inputs: `<s>[INST] ${userMessage} [/INST]`,
+        inputs: `<|system|>Sen yardımsever bir asistansın.<|user|>${userMessage}<|assistant|>`,
         parameters: {
           max_new_tokens: 100,
           temperature: 0.7,
-          return_full_text: false
+          do_sample: true
         }
       };
 
@@ -102,7 +97,7 @@
         }
 
         const data = await response.json();
-        const botText = data?.[0]?.generated_text?.trim() || "Cevap alınamadı.";
+        const botText = data?.[0]?.generated_text?.split("<|assistant|>")[1]?.trim() || "Cevap alınamadı.";
         chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botText}</div>`;
         chat.scrollTop = chat.scrollHeight;
 
@@ -114,4 +109,3 @@
 
 </body>
 </html>
-
