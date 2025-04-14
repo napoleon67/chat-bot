@@ -52,7 +52,7 @@
 
   <div class="chatbox">
     <div class="messages" id="chat">
-      <div class="bot"><strong>Bot:</strong> Merhaba! Mistral destekli chatbot buradayım 😊</div>
+      <div class="bot"><strong>Bot:</strong> Merhaba! Mistral destekli chatbotq buradayım 😊</div>
     </div>
     <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
     <button onclick="sendMessage()">Gönder</button>
@@ -60,7 +60,7 @@
 
   <script>
     const API_KEY = "Bearer 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"; // ← Hugging Face API key buraya
-     const model = "HuggingFaceH4/zephyr-7b-beta";
+    const model = "google/flan-t5-large";
 
     document.getElementById("userInput").addEventListener("keypress", function (e) {
       if (e.key === "Enter") {
