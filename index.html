@@ -52,32 +52,21 @@
 
   <div class="chatbox">
     <div class="messages" id="chat">
-      <div class="bot"><strong>Bot:</strong> hello ı am a chat bot 😊</div>
+      <div class="bot"><strong>Bot:</strong> Merhaba! Ben bir sohbet botuyum.</div>
     </div>
     <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
-    <button onclick="sendMessage()">send</button>
+    <button onclick="sendMessage()">Send</button>
   </div>
 
   <script>
-    const API_KEY = "Bearer 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"; // ← BURAYA Hugging Face token'ını yaz
-
+    const API_KEY = "Bearer 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";
     const model = "HuggingFaceH4/zephyr-7b-beta";
-    
-document.getElementById("userInput").addEventListener("keypress", functionn (e) {
-  if (e.key == "Enter") {
 
-    sendMessage();
-  }
-
-  parameters: {
-  max_new_tokens: 400,
-  temperature: 0.7,
-  do_sample: true,
-  top_p: 0.9
-  }
-  
-  
-});
+    document.getElementById("userInput").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
 
     async function sendMessage() {
       const input = document.getElementById("userInput");
@@ -90,7 +79,12 @@ document.getElementById("userInput").addEventListener("keypress", functionn (e) 
 
       const payload = {
         inputs: `<|system|>Sen yardımsever bir asistansın.<|user|>${userMessage}<|assistant|>`,
-        
+        parameters: {
+          max_new_tokens: 400,
+          temperature: 0.7,
+          do_sample: true,
+          top_p: 0.9
+        }
       };
 
       try {
