@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chatbot</title>
+  <title>Sesli Chat Bot</title>
   <style>
     body {
       font-family: Arial;
@@ -38,13 +38,14 @@
       border-radius: 5px;
     }
     input {
-      width: 80%;
+      width: 70%;
       border: 1px solid #ccc;
     }
     button {
       background-color: #28a745;
       color: white;
       border: none;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -56,73 +57,93 @@
     </div>
     <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
     <button onclick="sendMessage()">Gönder</button>
-    <button onclick="speakWithAI()">🎙️ Konuş</button>
+    <button onclick="startListening()">🎤 Konuş</button>
   </div>
 
   <script>
-    const API_KEY = "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";
-    const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+    const API_KEY = "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"; // GROQ API KEY
+    const model = "mixtral-8x7b-32768"; // Groq modeli
+    const messages = [];
 
-    async function sendMessage(message = null) {
-      const input = document.getElementById("userInput");
-      const chat = document.getElementById("chat");
-      const userMessage = message || input.value.trim();
-      if (!userMessage) return;
-
-      chat.innerHTML += `<div class="user"><strong>User:</strong> ${userMessage}</div>`;
-      input.value = "";
-
-      const payload = {
-        model: "mixtral-8x7b-32768",
-        messages: [
-          { role: "system", content: "Sen yardımsever bir asistansın." },
-          { role: "user", content: userMessage }
-        ],
-        temperature: 0.7
-      };
-
-      try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${API_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-        const botText = data?.choices?.[0]?.message?.content || "Cevap alınamadı.";
-        chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botText}</div>`;
-        chat.scrollTop = chat.scrollHeight;
-        speak(botText);
-      } catch (error) {
-        chat.innerHTML += `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
-      }
-    }
-
-    document.getElementById("userInput").addEventListener("keypress", function(e) {
+    document.getElementById("userInput").addEventListener("keypress", function (e) {
       if (e.key === "Enter") {
         sendMessage();
       }
     });
 
-    function speak(text) {
-      const synth = window.speechSynthesis;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "tr-TR";
-      synth.speak(utterance);
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chat = document.getElementById("chat");
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      chat.innerHTML += `<div class="user"><strong>User:</strong> ${userMessage}</div>`;
+      messages.push({ role: "user", content: userMessage });
+      input.value = "";
+
+      try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: messages,
+            temperature: 0.7
+          })
+        });
+
+        const data = await response.json();
+        const botReply = data.choices?.[0]?.message?.content || "Cevap alınamadı.";
+        messages.push({ role: "assistant", content: botReply });
+
+        chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botReply}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+
+        // 🔊 Erkek sesiyle cevap ver
+        speak(botReply);
+      } catch (error) {
+        chat.innerHTML += `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
+      }
     }
 
-    function speakWithAI() {
+    // 🎤 Konuşma ile giriş
+    function startListening() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'tr-TR';
+      recognition.lang = "tr-TR";
+      recognition.start();
+
       recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript;
-        sendMessage(transcript);
+        document.getElementById("userInput").value = transcript;
+        sendMessage();
       };
-      recognition.start();
+
+      recognition.onerror = function(event) {
+        alert("Ses algılanamadı: " + event.error);
+      };
     }
+
+    // 🔊 Botun sesli yanıt vermesi
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = "tr-TR";
+      msg.rate = 1;
+
+      // Erkek sesi seçimi
+      const voices = window.speechSynthesis.getVoices();
+      const maleVoice = voices.find(voice => voice.lang === "tr-TR" && voice.name.toLowerCase().includes("erkek"));
+
+      if (maleVoice) msg.voice = maleVoice;
+      else msg.voice = voices.find(v => v.lang === "tr-TR") || null;
+
+      window.speechSynthesis.speak(msg);
+    }
+
+    // Sesleri önceden yükle (gerekli)
+    window.speechSynthesis.onvoiceschanged = () => {};
   </script>
 
 </body>
