@@ -59,7 +59,7 @@
   </div>
 
   <script>
-    const API_KEY = "AIzaSyDUduSbO3KzXmsRZrLy18mDEX0Mn2CcIdI"; // Gemini API Key
+    const API_KEY = "AIzaSyDUduSbO3KzXmsRZrLy18mDEX0Mn2CcIdI";
     const MODEL = "gemini-pro";
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
@@ -78,6 +78,12 @@
       chat.innerHTML += `<div class="user"><strong>User:</strong> ${userMessage}</div>`;
       input.value = "";
 
+      const loadingDiv = document.createElement("div");
+      loadingDiv.className = "bot";
+      loadingDiv.innerHTML = "<strong>Bot:</strong> <span id='botReply'></span>";
+      chat.appendChild(loadingDiv);
+      chat.scrollTop = chat.scrollHeight;
+
       const payload = {
         contents: [{ parts: [{ text: userMessage }] }]
       };
@@ -92,12 +98,24 @@
         });
 
         const data = await response.json();
-        const botReply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Cevap alınamadı.";
-        chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botReply}</div>`;
-        chat.scrollTop = chat.scrollHeight;
+        const botText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!botText) throw new Error("Boş cevap alındı.");
+
+        // Yazma animasyonu
+        const replyEl = document.getElementById("botReply");
+        let i = 0;
+        const typeWriter = () => {
+          if (i < botText.length) {
+            replyEl.innerHTML += botText.charAt(i);
+            i++;
+            setTimeout(typeWriter, 30); // hız
+          }
+        };
+        typeWriter();
 
       } catch (error) {
-        chat.innerHTML += `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
+        loadingDiv.innerHTML = `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
       }
     }
   </script>
