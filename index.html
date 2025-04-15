@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sesli Chat Bot 👑</title>
+  <title>Akıllı Chatbot</title>
   <style>
     body {
-      font-family: Arial;
-      background: #A6C9A9;
-      padding: 40px;
+      background-color: #d0f0c0;
+      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
+      padding: 40px;
     }
     .chatbox {
       width: 600px;
-      background: #00FF7F;
+      background: white;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -29,9 +29,11 @@
     }
     .user {
       text-align: right;
+      color: blue;
     }
     .bot {
       text-align: left;
+      color: green;
     }
     input, button {
       padding: 10px;
@@ -42,9 +44,6 @@
       border: 1px solid #ccc;
     }
     button {
-      background-color: #28a745;
-      color: white;
-      border: none;
       margin-left: 5px;
     }
   </style>
@@ -53,38 +52,29 @@
 
   <div class="chatbox">
     <div class="messages" id="chat">
-      <div class="bot"><strong>Bot:</strong> Merhaba! Ben buradayım 😎</div>
+      <div class="bot"><strong>Bot:</strong> Merhaba! Ben buradayım 🤖</div>
     </div>
-    <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
+    <input type="text" id="userInput" placeholder="Mesaj yaz...">
     <button onclick="sendMessage()">Gönder</button>
     <button onclick="startListening()">🎙️ Konuş</button>
   </div>
 
   <script>
     const API_KEY = "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";
-    const chat = document.getElementById("chat");
+    const model = "llama2-70b-4096";
 
-    document.getElementById("userInput").addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
+    document.getElementById("userInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") sendMessage();
     });
 
-    async function sendMessage(text = null) {
+    async function sendMessage() {
       const input = document.getElementById("userInput");
-      const userMessage = text || input.value.trim();
+      const chat = document.getElementById("chat");
+      const userMessage = input.value.trim();
       if (!userMessage) return;
 
-      chat.innerHTML += `<div class="user"><strong>User:</strong> ${userMessage}</div>`;
+      chat.innerHTML += `<div class="user"><strong>Sen:</strong> ${userMessage}</div>`;
       input.value = "";
-
-      const payload = {
-        messages: [
-          { role: "system", content: "Sen yardımsever bir asistansın." },
-          { role: "user", content: userMessage }
-        ],
-        model: "llama2-70b-4096"
-      };
 
       try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -93,15 +83,21 @@
             "Authorization": `Bearer ${API_KEY}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              { role: "system", content: "Sen yardımsever bir asistansın." },
+              { role: "user", content: userMessage }
+            ],
+            temperature: 0.7
+          })
         });
 
         const data = await response.json();
-        const botText = data.choices?.[0]?.message?.content || "Cevap alınamadı.";
-        chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botText}</div>`;
+        const botReply = data.choices?.[0]?.message?.content?.trim() || "Cevap alınamadı.";
+        chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botReply}</div>`;
         chat.scrollTop = chat.scrollHeight;
-        speak(botText);
-
+        speak(botReply);
       } catch (error) {
         chat.innerHTML += `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
       }
@@ -109,28 +105,24 @@
 
     function speak(text) {
       const utterance = new SpeechSynthesisUtterance(text);
-      const voices = speechSynthesis.getVoices();
-      const maleVoice = voices.find(voice => voice.name.includes("Male") || voice.name.includes("Erkek")) || voices[0];
-      utterance.voice = maleVoice;
       utterance.lang = "tr-TR";
+      utterance.voice = speechSynthesis.getVoices().find(v => v.name.includes("Male") || v.name.includes("Erkek")) || speechSynthesis.getVoices()[0];
       speechSynthesis.speak(utterance);
     }
 
     function startListening() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = "tr-TR";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
       recognition.start();
 
-      recognition.onresult = function (event) {
-        const spokenText = event.results[0][0].transcript;
-        sendMessage(spokenText);
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("userInput").value = transcript;
+        sendMessage();
       };
 
-      recognition.onerror = function (event) {
-        chat.innerHTML += `<div class="bot"><strong>Hata:</strong> Ses tanıma başarısız: ${event.error}</div>`;
+      recognition.onerror = function(event) {
+        alert("Ses tanıma hatası: " + event.error);
       };
     }
   </script>
