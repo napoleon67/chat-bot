@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat bot</title>
+  <title>Chat Bot</title>
   <style>
     body {
       font-family: Arial;
@@ -60,8 +60,7 @@
 
   <script>
     const API_KEY = "AIzaSyDUduSbO3KzXmsRZrLy18mDEX0Mn2CcIdI";
-    const MODEL = "gemini-pro";
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     document.getElementById("userInput").addEventListener("keypress", function (e) {
       if (e.key === "Enter") {
@@ -78,10 +77,10 @@
       chat.innerHTML += `<div class="user"><strong>User:</strong> ${userMessage}</div>`;
       input.value = "";
 
-      const loadingDiv = document.createElement("div");
-      loadingDiv.className = "bot";
-      loadingDiv.innerHTML = "<strong>Bot:</strong> <span id='botReply'></span>";
-      chat.appendChild(loadingDiv);
+      const botDiv = document.createElement("div");
+      botDiv.className = "bot";
+      botDiv.innerHTML = "<strong>Bot:</strong> <span id='botReply'></span>";
+      chat.appendChild(botDiv);
       chat.scrollTop = chat.scrollHeight;
 
       const payload = {
@@ -98,24 +97,33 @@
         });
 
         const data = await response.json();
+
         const botText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-        if (!botText) throw new Error("Boş cevap alındı.");
+        if (!botText || botText.trim() === "") {
+          throw new Error("Cevap alınamadı.");
+        }
 
-        // Yazma animasyonu
         const replyEl = document.getElementById("botReply");
         let i = 0;
-        const typeWriter = () => {
+
+        function typeWriter() {
           if (i < botText.length) {
             replyEl.innerHTML += botText.charAt(i);
             i++;
-            setTimeout(typeWriter, 30); // hız
+            setTimeout(typeWriter, 30);
           }
-        };
+        }
+
         typeWriter();
 
+        // SESLİ YANIT (Text-to-Speech)
+        const utterance = new SpeechSynthesisUtterance(botText);
+        utterance.lang = "tr-TR"; // Türkçe
+        speechSynthesis.speak(utterance);
+
       } catch (error) {
-        loadingDiv.innerHTML = `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
+        botDiv.innerHTML = `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
       }
     }
   </script>
