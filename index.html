@@ -61,7 +61,7 @@
     </div>
     <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
     <button onclick="sendMessage()">Send</button>
-    <button class="speak-btn" onclick="startSpeaking()">yapay zeka ile konuşmak</button>
+    <button class="speak-btn" onclick="startSpeaking()">Şey</button>
   </div>
 
   <script>
@@ -100,9 +100,13 @@
           body: JSON.stringify(payload),
         });
 
+        // API yanıtını konsola yazdır
         const data = await response.json();
-        const botText = data?.response || "Cevap alınamadı.";
+        console.log(data); // API'nin döndürdüğü veriyi görmek için
 
+        // Eğer response varsa, botText'e atama yap; yoksa hata mesajı göster
+        const botText = data?.response || "Cevap alınamadı.";
+        
         // Bot cevabını sohbet penceresine ekle
         chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botText}</div>`;
         chat.scrollTop = chat.scrollHeight;
@@ -113,6 +117,8 @@
         window.speechSynthesis.speak(speech);
 
       } catch (error) {
+        // Hata mesajını yazdır ve kullanıcıya göster
+        console.error("Hata:", error); // Konsola hata yazdır
         chat.innerHTML += `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
       }
     }
