@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Konuşan Chat Bot</title>
+  <title>Sesli Chat Bot 👑</title>
   <style>
     body {
       font-family: Arial;
@@ -36,22 +36,16 @@
     input, button {
       padding: 10px;
       border-radius: 5px;
-      margin-right: 5px;
     }
     input {
-      width: 60%;
+      width: 70%;
       border: 1px solid #ccc;
-    }
-    .buttons {
-      display: flex;
-      gap: 5px;
-      margin-top: 10px;
     }
     button {
       background-color: #28a745;
       color: white;
       border: none;
-      cursor: pointer;
+      margin-left: 5px;
     }
   </style>
 </head>
@@ -59,40 +53,37 @@
 
   <div class="chatbox">
     <div class="messages" id="chat">
-      <div class="bot"><strong>Bot:</strong> Merhaba! Ben bir sohbet botuyum.</div>
+      <div class="bot"><strong>Bot:</strong> Merhaba! Ben buradayım 😎</div>
     </div>
-    <div class="input-section">
-      <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
-      <div class="buttons">
-        <button onclick="sendMessage()">Gönder</button>
-        <button onclick="startListening()">🎤 Konuş</button>
-      </div>
-    </div>
+    <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
+    <button onclick="sendMessage()">Gönder</button>
+    <button onclick="startListening()">🎙️ Konuş</button>
   </div>
 
   <script>
     const API_KEY = "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";
-    const model = "llama2-70b-4096";
     const chat = document.getElementById("chat");
 
     document.getElementById("userInput").addEventListener("keypress", function (e) {
-      if (e.key === "Enter") sendMessage();
+      if (e.key === "Enter") {
+        sendMessage();
+      }
     });
 
-    async function sendMessage() {
+    async function sendMessage(text = null) {
       const input = document.getElementById("userInput");
-      const userMessage = input.value.trim();
+      const userMessage = text || input.value.trim();
       if (!userMessage) return;
 
       chat.innerHTML += `<div class="user"><strong>User:</strong> ${userMessage}</div>`;
       input.value = "";
 
       const payload = {
-        model: model,
         messages: [
           { role: "system", content: "Sen yardımsever bir asistansın." },
           { role: "user", content: userMessage }
-        ]
+        ],
+        model: "llama2-70b-4096"
       };
 
       try {
@@ -106,42 +97,41 @@
         });
 
         const data = await response.json();
-        const botReply = data.choices?.[0]?.message?.content?.trim() || "Cevap alınamadı.";
-        chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botReply}</div>`;
+        const botText = data.choices?.[0]?.message?.content || "Cevap alınamadı.";
+        chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botText}</div>`;
         chat.scrollTop = chat.scrollHeight;
-
-        // Sesli cevap
-        const utterance = new SpeechSynthesisUtterance(botReply);
-        utterance.lang = "tr-TR";
-        utterance.pitch = 1;
-        utterance.rate = 1;
-        const maleVoice = speechSynthesis.getVoices().find(v => v.name.includes("Male") || v.name.includes("Erkek"));
-        if (maleVoice) utterance.voice = maleVoice;
-        speechSynthesis.speak(utterance);
+        speak(botText);
 
       } catch (error) {
         chat.innerHTML += `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
       }
     }
 
-    // 🎤 Sesle giriş
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voices = speechSynthesis.getVoices();
+      const maleVoice = voices.find(voice => voice.name.includes("Male") || voice.name.includes("Erkek")) || voices[0];
+      utterance.voice = maleVoice;
+      utterance.lang = "tr-TR";
+      speechSynthesis.speak(utterance);
+    }
+
     function startListening() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'tr-TR';
+      recognition.lang = "tr-TR";
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
+      recognition.start();
+
       recognition.onresult = function (event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById("userInput").value = transcript;
-        sendMessage();
+        const spokenText = event.results[0][0].transcript;
+        sendMessage(spokenText);
       };
 
       recognition.onerror = function (event) {
-        alert("Ses algılanamadı: " + event.error);
+        chat.innerHTML += `<div class="bot"><strong>Hata:</strong> Ses tanıma başarısız: ${event.error}</div>`;
       };
-
-      recognition.start();
     }
   </script>
 
