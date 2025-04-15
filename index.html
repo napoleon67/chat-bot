@@ -96,6 +96,15 @@
         });
 
         const data = await response.json();
+
+        // API yanıtını kontrol et
+        console.log(data);
+
+        if (!data?.choices || data.choices.length === 0) {
+          chat.innerHTML += `<div class="bot"><strong>Bot:</strong> Cevap alınamadı.</div>`;
+          return;
+        }
+
         const botReply = data?.choices?.[0]?.message?.content || "Cevap alınamadı.";
         chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botReply}</div>`;
         chat.scrollTop = chat.scrollHeight;
