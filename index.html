@@ -2,48 +2,107 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>DeepSeek AI Chat</title>
+  <title>🟢 MSN AI Chat - 2000'ler</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
-    #chat { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .msg { margin: 10px 0; }
-    .user { font-weight: bold; }
-    .ai { color: green; }
+    body {
+      background-color: #c3d9ff;
+      font-family: "Comic Sans MS", cursive;
+      margin: 0;
+      padding: 0;
+    }
+
+    #chatContainer {
+      width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border: 3px groove #999;
+      box-shadow: 0 0 10px #666;
+      padding: 20px;
+    }
+
+    h2 {
+      background-color: navy;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      margin-top: 0;
+    }
+
+    #messages {
+      height: 300px;
+      overflow-y: scroll;
+      background-color: #f2f2f2;
+      padding: 10px;
+      border: 2px inset #ccc;
+      font-size: 14px;
+    }
+
+    .msg { margin-bottom: 10px; }
+    .user { color: darkblue; font-weight: bold; }
+    .ai { color: darkgreen; }
+
+    #inputArea {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 8px 10px;
+      margin-left: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      background-color: #0078d4;
+      color: white;
+    }
+
+    button:hover {
+      background-color: #005a9e;
+    }
+
+    audio { display: none; }
   </style>
 </head>
 <body>
-  <div id="chat">
-    <h2>💬 DeepSeek AI Chat</h2>
+  <div id="chatContainer">
+    <h2>💬 MSN AI Chat (2000'ler)</h2>
     <div id="messages"></div>
-    <input type="text" id="userInput" placeholder="Mesaj yaz..." style="width: 80%;">
-    <button onclick="sendMessage()">Gönder</button>
+    <div id="inputArea">
+      <input type="text" id="userInput" placeholder="Mesaj yaz..." />
+      <button onclick="sendMessage()">Gönder</button>
+      <button onclick="startVoice()">🎤</button>
+    </div>
   </div>
 
   <script>
-    const API_KEY = "sk-85bb0fdcff9c4d0fabdbab7aa90756a5"; // ← Buraya kendi DeepSeek API anahtarını yaz
+    const API_KEY = "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";
+    const messagesDiv = document.getElementById("messages");
 
     async function sendMessage() {
       const input = document.getElementById("userInput");
-      const msg = input.value.trim();
-      if (!msg) return;
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
 
-      // Mesajı göster
-      const messagesDiv = document.getElementById("messages");
-      messagesDiv.innerHTML += `<div class="msg user">👤: ${msg}</div>`;
+      appendMessage("🧑", userMessage, "user");
       input.value = "";
 
-      // API'ye istek at
-      const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "deepseek-chat",
+          model: "llama3-8b-8192",
           messages: [
-            { role: "system", content: "Sen yardım eden bir yapay zekasın." },
-            { role: "user", content: msg }
+            { role: "system", content: "Sen MSN döneminden çıkmış gibi konuşan nostaljik, eğlenceli bir yapay zekasın." },
+            { role: "user", content: userMessage }
           ],
           temperature: 0.7,
           max_tokens: 500
@@ -53,12 +112,40 @@
       if (response.ok) {
         const data = await response.json();
         const reply = data.choices[0].message.content;
-        messagesDiv.innerHTML += `<div class="msg ai">🤖: ${reply}</div>`;
+        appendMessage("🤖", reply, "ai");
+        speak(reply);
       } else {
-        messagesDiv.innerHTML += `<div class="msg ai">❌ Hata: ${response.status}</div>`;
+        appendMessage("❌", `Hata: ${response.status}`, "ai");
       }
+    }
 
+    function appendMessage(prefix, text, cls) {
+      const div = document.createElement("div");
+      div.className = `msg ${cls}`;
+      div.innerHTML = `<span>${prefix}:</span> ${text}`;
+      messagesDiv.appendChild(div);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "tr-TR";
+      utterance.rate = 1;
+      speechSynthesis.speak(utterance);
+    }
+
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "tr-TR";
+      recognition.start();
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("userInput").value = transcript;
+        sendMessage();
+      };
+      recognition.onerror = function() {
+        alert("Ses algılanamadı, tekrar deneyin.");
+      };
     }
   </script>
 </body>
