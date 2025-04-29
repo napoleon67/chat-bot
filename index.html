@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🟢 MSN AI Chat - 2000'ler</title>
+  <title>🟢 Retro AI Chat - 2000s & 2010s</title>
   <style>
     body {
-      background-color: #c3d9ff;
-      font-family: "Comic Sans MS", cursive;
+      background-color: #f0f0f0;
+      font-family: "Arial", sans-serif;
       margin: 0;
       padding: 0;
     }
@@ -14,32 +14,43 @@
     #chatContainer {
       width: 600px;
       margin: 40px auto;
-      background-color: #ffffff;
-      border: 3px groove #999;
-      box-shadow: 0 0 10px #666;
+      background: rgba(255, 255, 255, 0.9);
+      border: 3px solid rgba(0, 0, 0, 0.2);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
       padding: 20px;
     }
 
     h2 {
-      background-color: navy;
+      background-color: rgba(0, 123, 255, 0.8);
       color: white;
       padding: 10px;
       text-align: center;
       margin-top: 0;
+      border-radius: 8px;
     }
 
     #messages {
       height: 300px;
       overflow-y: scroll;
-      background-color: #f2f2f2;
+      background-color: rgba(240, 240, 240, 0.8);
       padding: 10px;
-      border: 2px inset #ccc;
+      border: 2px solid rgba(200, 200, 200, 0.8);
       font-size: 14px;
+      border-radius: 5px;
     }
 
-    .msg { margin-bottom: 10px; }
-    .user { color: darkblue; font-weight: bold; }
-    .ai { color: darkgreen; }
+    .msg {
+      margin-bottom: 10px;
+    }
+    .user {
+      color: #1e90ff;
+      font-weight: bold;
+    }
+    .ai {
+      color: #32cd32;
+      font-style: italic;
+    }
 
     #inputArea {
       display: flex;
@@ -50,6 +61,9 @@
       flex: 1;
       padding: 8px;
       font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: rgba(255, 255, 255, 0.8);
     }
 
     button {
@@ -58,24 +72,27 @@
       font-weight: bold;
       cursor: pointer;
       border: none;
-      background-color: #0078d4;
+      background-color: rgba(0, 123, 255, 0.8);
       color: white;
+      border-radius: 5px;
     }
 
     button:hover {
-      background-color: #005a9e;
+      background-color: rgba(0, 123, 255, 1);
     }
 
-    audio { display: none; }
+    audio {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div id="chatContainer">
-    <h2>💬 MSN AI Chat (2000'ler)</h2>
+    <h2>💬 Retro AI Chat - 2000s & 2010s</h2>
     <div id="messages"></div>
     <div id="inputArea">
-      <input type="text" id="userInput" placeholder="Mesaj yaz..." />
-      <button onclick="sendMessage()">Gönder</button>
+      <input type="text" id="userInput" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
       <button onclick="startVoice()">🎤</button>
     </div>
   </div>
@@ -101,7 +118,7 @@
         body: JSON.stringify({
           model: "llama3-8b-8192",
           messages: [
-            { role: "system", content: "Sen MSN döneminden çıkmış gibi konuşan nostaljik, eğlenceli bir yapay zekasın." },
+            { role: "system", content: "You are a nostalgic, fun AI that speaks like it's from the 2000s and 2010s." },
             { role: "user", content: userMessage }
           ],
           temperature: 0.7,
@@ -115,7 +132,7 @@
         appendMessage("🤖", reply, "ai");
         speak(reply);
       } else {
-        appendMessage("❌", `Hata: ${response.status}`, "ai");
+        appendMessage("❌", `Error: ${response.status}`, "ai");
       }
     }
 
@@ -129,39 +146,15 @@
 
     function speak(text) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = detectLanguage(text);  // Dil tespiti yap
-      utterance.rate = 0.9;  // Hızı biraz yavaşlat
-      utterance.pitch = 1.2;  // Tonu biraz artır
-      const voices = speechSynthesis.getVoices();
-      const selectedVoice = voices.find(voice => voice.lang === utterance.lang);  // Dil ile uyumlu ses seç
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      }
+      utterance.lang = "en-GB"; // Use British English for better clarity
+      utterance.rate = 0.9; 
+      utterance.pitch = 1.1;
       speechSynthesis.speak(utterance);
-    }
-
-    function detectLanguage(text) {
-      // Basit bir dil tespiti fonksiyonu (daha gelişmiş bir çözüm kullanılabilir)
-      const languages = {
-        "tr": "tr-TR",
-        "en": "en-US",
-        "es": "es-ES",
-        "fr": "fr-FR",
-        "de": "de-DE",
-        // Daha fazla dil eklenebilir
-      };
-
-      if (languages[text]) {
-        return languages[text];
-      }
-
-      // Varsayılan olarak Türkçe
-      return "tr-TR";  // Gelişmiş dil tespiti ile bunu değiştirebilirsiniz.
     }
 
     function startVoice() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "tr-TR";
+      recognition.lang = "en-GB";
       recognition.start();
       recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript;
@@ -169,7 +162,7 @@
         sendMessage();
       };
       recognition.onerror = function() {
-        alert("Ses algılanamadı, tekrar deneyin.");
+        alert("Sorry, speech couldn't be recognized. Please try again.");
       };
     }
   </script>
