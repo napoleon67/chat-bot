@@ -129,11 +129,34 @@
 
     function speak(text) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "tr-TR";
+      utterance.lang = detectLanguage(text);  // Dil tespiti yap
       utterance.rate = 0.9;  // Hızı biraz yavaşlat
       utterance.pitch = 1.2;  // Tonu biraz artır
-      utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === "Google Türkçe");  // Türkçe ses seçimi
+      const voices = speechSynthesis.getVoices();
+      const selectedVoice = voices.find(voice => voice.lang === utterance.lang);  // Dil ile uyumlu ses seç
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
       speechSynthesis.speak(utterance);
+    }
+
+    function detectLanguage(text) {
+      // Basit bir dil tespiti fonksiyonu (daha gelişmiş bir çözüm kullanılabilir)
+      const languages = {
+        "tr": "tr-TR",
+        "en": "en-US",
+        "es": "es-ES",
+        "fr": "fr-FR",
+        "de": "de-DE",
+        // Daha fazla dil eklenebilir
+      };
+
+      if (languages[text]) {
+        return languages[text];
+      }
+
+      // Varsayılan olarak Türkçe
+      return "tr-TR";  // Gelişmiş dil tespiti ile bunu değiştirebilirsiniz.
     }
 
     function startVoice() {
