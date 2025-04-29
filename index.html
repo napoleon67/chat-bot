@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🟢 Retro AI Chat - 2000s & 2010s</title>
+  <title>🟢 MSN AI Chat - 2000s</title>
   <style>
     body {
-      background: linear-gradient(to bottom, #1e90ff, #ffffff); /* Mavi tonlarından beyaza geçiş */
-      font-family: "Arial", sans-serif;
+      background: linear-gradient(to bottom, #1e90ff 0%, #87cefa 40%, #f0f8ff 75%, #ffffff 100%);
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: 100% 100%;
+      font-family: "Comic Sans MS", cursive;
       margin: 0;
       padding: 0;
     }
@@ -14,43 +17,36 @@
     #chatContainer {
       width: 600px;
       margin: 40px auto;
-      background: rgba(255, 255, 255, 0.7); /* Yarı saydam beyaz */
-      border: 3px solid rgba(0, 0, 0, 0.2);
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 3px groove #999;
+      box-shadow: 0 0 10px #666;
       padding: 20px;
+      backdrop-filter: blur(4px);
     }
 
     h2 {
-      background-color: rgba(0, 123, 255, 0.8);
+      background: linear-gradient(to right, navy, dodgerblue);
       color: white;
       padding: 10px;
       text-align: center;
       margin-top: 0;
-      border-radius: 8px;
+      font-weight: bold;
+      border-radius: 6px;
     }
 
     #messages {
       height: 300px;
       overflow-y: scroll;
-      background-color: rgba(240, 240, 240, 0.9); /* Yarı saydam gri */
+      background-color: rgba(242, 242, 242, 0.6);
       padding: 10px;
-      border: 2px solid rgba(200, 200, 200, 0.8);
+      border: 2px inset #ccc;
       font-size: 14px;
-      border-radius: 5px;
+      border-radius: 6px;
     }
 
-    .msg {
-      margin-bottom: 10px;
-    }
-    .user {
-      color: #1e90ff;
-      font-weight: bold;
-    }
-    .ai {
-      color: #32cd32;
-      font-style: italic;
-    }
+    .msg { margin-bottom: 10px; }
+    .user { color: darkblue; font-weight: bold; }
+    .ai { color: darkgreen; }
 
     #inputArea {
       display: flex;
@@ -61,24 +57,25 @@
       flex: 1;
       padding: 8px;
       font-size: 14px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      background: rgba(255, 255, 255, 0.8); /* Yarı saydam arka plan */
+      border: 1px solid #aaa;
+      border-radius: 4px;
     }
 
     button {
-      padding: 8px 10px;
+      padding: 8px 12px;
       margin-left: 5px;
       font-weight: bold;
       cursor: pointer;
       border: none;
-      background: linear-gradient(45deg, #1e90ff, #ffffff); /* Mavi tonlarından beyaza geçiş */
+      border-radius: 4px;
+      background: linear-gradient(to bottom, #0078d4, #b0d8ff);
       color: white;
-      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: background 0.3s;
     }
 
     button:hover {
-      background: linear-gradient(45deg, #0078d4, #ffffff); /* Düğme üzerine gelindiğinde renk değişimi */
+      background: linear-gradient(to bottom, #005a9e, #a8d0ff);
     }
 
     audio {
@@ -88,14 +85,24 @@
 </head>
 <body>
   <div id="chatContainer">
-    <h2>💬 Retro AI Chat - 2000s & 2010s</h2>
+    <h2>💬 MSN AI Chat (2000s)</h2>
     <div id="messages"></div>
     <div id="inputArea">
-      <input type="text" id="userInput" placeholder="Type your message..." />
+      <input type="text" id="userInput" placeholder="Type a message..." />
       <button onclick="sendMessage()">Send</button>
       <button onclick="startVoice()">🎤</button>
     </div>
   </div>
+
+  <!-- 🔊 Background music (loop + low volume) -->
+  <audio id="bgMusic" autoplay loop>
+    <source src="music.mp3" type="audio/mpeg"> <!-- Update file path if needed -->
+    Your browser does not support the audio element.
+  </audio>
+  <script>
+    const bgMusic = document.getElementById("bgMusic");
+    bgMusic.volume = 0.05; // Low volume
+  </script>
 
   <script>
     const API_KEY = "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";
@@ -118,7 +125,7 @@
         body: JSON.stringify({
           model: "llama3-8b-8192",
           messages: [
-            { role: "system", content: "You are a nostalgic, fun AI that speaks like it's from the 2000s and 2010s." },
+            { role: "system", content: "You are a fun and nostalgic AI assistant who sounds like it's from MSN Messenger days in the 2000s." },
             { role: "user", content: userMessage }
           ],
           temperature: 0.7,
@@ -146,15 +153,16 @@
 
     function speak(text) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-GB"; // Use British English for better clarity
-      utterance.rate = 0.9; 
-      utterance.pitch = 1.1;
+      utterance.lang = "en-US";
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
       speechSynthesis.speak(utterance);
     }
 
     function startVoice() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "en-GB";
+      recognition.lang = "en-US";
       recognition.start();
       recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript;
@@ -162,7 +170,7 @@
         sendMessage();
       };
       recognition.onerror = function() {
-        alert("Sorry, speech couldn't be recognized. Please try again.");
+        alert("Could not detect voice, please try again.");
       };
     }
   </script>
