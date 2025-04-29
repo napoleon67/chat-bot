@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat Bot</title>
+  <title>Sesli Chat Bot</title>
   <style>
     body {
       font-family: Arial;
@@ -38,13 +38,14 @@
       border-radius: 5px;
     }
     input {
-      width: 80%;
+      width: 70%;
       border: 1px solid #ccc;
     }
     button {
       background-color: #28a745;
       color: white;
       border: none;
+      margin-left: 5px;
     }
   </style>
 </head>
@@ -56,11 +57,12 @@
     </div>
     <input type="text" id="userInput" placeholder="Bir şeyler yaz...">
     <button onclick="sendMessage()">Gönder</button>
+    <button onclick="startListening()">🎤 Konuş</button>
   </div>
 
   <script>
-    const API_KEY = "Bearer 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"; // Hugging Face API anahtarınızı buraya girin
-    const MODEL = "gpt-3.5-turbo"; // Kullanmak istediğiniz model (örneğin, GPT-3.5)
+    const API_KEY = "sk-85bb0fdcff9c440fdabdbab7aa90756a5"; // DeepSeek API anahtarı
+    const ENDPOINT = "https://api.deepseek.com/v1/chat/completions";
 
     document.getElementById("userInput").addEventListener("keypress", function (e) {
       if (e.key === "Enter") {
@@ -68,39 +70,42 @@
       }
     });
 
-    async function sendMessage() {
+    async function sendMessage(message = null) {
       const input = document.getElementById("userInput");
       const chat = document.getElementById("chat");
-      const userMessage = input.value.trim();
+      const userMessage = message || input.value.trim();
       if (!userMessage) return;
 
       chat.innerHTML += `<div class="user"><strong>Sen:</strong> ${userMessage}</div>`;
       input.value = "";
 
       try {
-        const response = await fetch("https://api-inference.huggingface.co/models/" + MODEL, {
+        const response = await fetch(ENDPOINT, {
           method: "POST",
           headers: {
-            "Authorization": API_KEY,
+            "Authorization": `Bearer ${API_KEY}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            inputs: userMessage,
+            model: "deepseek-chat",
+            messages: [
+              { role: "user", content: userMessage }
+            ]
           })
         });
 
         const data = await response.json();
-        
-        if (!data || data.error) {
+
+        if (!data || !data.choices || !data.choices[0]) {
           chat.innerHTML += `<div class="bot"><strong>Bot:</strong> Cevap alınamadı.</div>`;
           return;
         }
 
-        const botReply = data?.[0]?.generated_text || "Cevap alınamadı.";
+        const botReply = data.choices[0].message.content;
         chat.innerHTML += `<div class="bot"><strong>Bot:</strong> ${botReply}</div>`;
         chat.scrollTop = chat.scrollHeight;
 
-        speak(botReply); // Sesli yanıt
+        speak(botReply);
 
       } catch (error) {
         chat.innerHTML += `<div class="bot"><strong>Hata:</strong> ${error.message}</div>`;
@@ -115,6 +120,24 @@
       const maleVoice = speechSynthesis.getVoices().find(v => v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("erkek"));
       if (maleVoice) utterance.voice = maleVoice;
       speechSynthesis.speak(utterance);
+    }
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "tr-TR";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const spokenText = event.results[0][0].transcript;
+        sendMessage(spokenText);
+      };
+
+      recognition.onerror = function(event) {
+        alert("Ses tanıma hatası: " + event.error);
+      };
     }
 
     // Sesler hazır olduğunda otomatik yükle
