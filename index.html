@@ -94,14 +94,15 @@
     </div>
   </div>
 
-  <!-- 🔊 Background music (loop + low volume) -->
+  <!-- 🔊 Background music -->
   <audio id="bgMusic" autoplay loop>
-    <source src="music.mp3" type="audio/mpeg"> <!-- Update file path if needed -->
+    <source src="music.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
+
   <script>
     const bgMusic = document.getElementById("bgMusic");
-    bgMusic.volume = 0.05; // Low volume
+    bgMusic.volume = 0.05;
   </script>
 
   <script>
@@ -119,7 +120,7 @@
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": Bearer ${API_KEY},
+          "Authorization": `Bearer ${API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -139,14 +140,14 @@
         appendMessage("🤖", reply, "ai");
         speak(reply);
       } else {
-        appendMessage("❌", Error: ${response.status}, "ai");
+        appendMessage("❌", `Error: ${response.status}`, "ai");
       }
     }
 
     function appendMessage(prefix, text, cls) {
       const div = document.createElement("div");
-      div.className = msg ${cls};
-      div.innerHTML = <span>${prefix}:</span> ${text};
+      div.className = `msg ${cls}`;
+      div.innerHTML = `<span>${prefix}:</span> ${text}`;
       messagesDiv.appendChild(div);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
@@ -155,22 +156,36 @@
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "en-US";
       utterance.rate = 1;
-      utterance.pitch = 1;
+      utterance.pitch = 0.8; // Erkek sesi gibi olması için pitch düşürüldü
       utterance.volume = 1;
+
+      // Erkek sesi seçimi (isteğe bağlı)
+      const voices = speechSynthesis.getVoices();
+      const maleVoice = voices.find(voice => voice.name.includes("Male") || voice.name.includes("John") || voice.name.includes("David"));
+      if (maleVoice) utterance.voice = maleVoice;
+
       speechSynthesis.speak(utterance);
     }
 
     function startVoice() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition is not supported on this browser.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
       recognition.lang = "en-US";
       recognition.start();
+
       recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript;
         document.getElementById("userInput").value = transcript;
         sendMessage();
       };
-      recognition.onerror = function() {
-        alert("Could not detect voice, please try again.");
+
+      recognition.onerror = function(event) {
+        alert("Voice error: " + event.error);
       };
     }
   </script>
